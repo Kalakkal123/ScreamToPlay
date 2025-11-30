@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Scream Go Hero — KK</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Scream Go Hero 🔊</h1>
+      <p class="muted">Scream louder to jump higher — endless runner like Flappy Bird.</p>
+    </header>
+
+    <main class="game-panel">
+      <canvas id="gameCanvas" width="900" height="400"></canvas>
+
+      <div class="controls">
+        <div class="left">
+          <button id="reqMic">Request Mic</button>
+          <button id="stopMic" disabled>Stop Mic</button>
+          <button id="startBtn">Start</button>
+          <button id="stopBtn" disabled>Stop</button>
+        </div>
+
+        <div class="center">
+          <label>Sensitivity
+            <input id="sensitivity" type="range" min="0.01" max="0.3" step="0.005" value="0.06"/>
+          </label>
+          <span id="sensVal">0.06</span>
+        </div>
+
+        <div class="right">
+          <div class="score">Score: <span id="score">0</span></div>
+        </div>
+      </div>
+
+      <div class="info">
+        <small>Tip: Start mic → press Start → make noise to jump. Click canvas to tap-jump.</small>
+      </div>
+    </main>
+
+    <footer class="credits">
+      <small>Background from itch — embedded. Use your voice clips to customize later.</small>
+    </footer>
+  </div>
+
+  <script src="game.js" type="module"></script>
+</body>
+</html>
