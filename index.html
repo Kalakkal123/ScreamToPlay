@@ -4,49 +4,154 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Scream Go Hero — KK</title>
+
+  <!-- Preload some fonts for a handcrafted look (you can replace these) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&family=Rubik:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet (I'll provide CSS when you ask) -->
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- Meta for nicer mobile experience -->
+  <meta name="theme-color" content="#071226" />
+  <meta name="description" content="Scream Go Hero — scream louder to jump higher. Endless runner with voice input.">
+
+  <!-- Small, human comment: paste Firebase config into the game.js instead of here.
+       If you want it in HTML, tell me and I'll provide a safe snippet (still recommended to store in JS). -->
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Scream Go Hero 🔊</h1>
-      <p class="muted">Scream louder to jump higher — endless runner like Flappy Bird.</p>
+  <!-- Page wrapper -->
+  <div id="app" class="app-root">
+    <!-- Top header -->
+    <header class="site-header" role="banner">
+      <div class="brand">
+        <h1 class="title">Scream Go Hero</h1>
+        <p class="subtitle">Scream louder → jump higher. Endless, addictive, (probably) chaotic.</p>
+      </div>
+
+      <nav class="top-controls" aria-label="Top controls">
+        <!-- Mic and auth area -->
+        <div class="auth-mic" id="authMicArea" role="region" aria-label="Microphone and account">
+          <button id="reqMic" class="btn btn-primary" aria-pressed="false" type="button">Request Mic</button>
+          <button id="stopMic" class="btn" aria-pressed="false" type="button" disabled>Stop Mic</button>
+          <span class="mic-status" id="micStatus" aria-live="polite">Mic: inactive</span>
+        </div>
+
+        <!-- Game control area -->
+        <div class="run-controls" role="region" aria-label="Game controls">
+          <button id="startBtn" class="btn btn-start" type="button">Start Game</button>
+          <button id="stopBtn" class="btn btn-stop" type="button" disabled>Stop</button>
+        </div>
+      </nav>
     </header>
 
-    <main class="game-panel">
-      <canvas id="gameCanvas" width="900" height="400"></canvas>
-
-      <div class="controls">
-        <div class="left">
-          <button id="reqMic">Request Mic</button>
-          <button id="stopMic" disabled>Stop Mic</button>
-          <button id="startBtn">Start</button>
-          <button id="stopBtn" disabled>Stop</button>
+    <!-- Main area: canvas + HUD + record/upload -->
+    <main id="main" class="main" role="main">
+      <section class="game-stage" aria-label="Game stage and canvas">
+        <!-- Canvas: the game will render to this element -->
+        <div class="canvas-wrap" aria-hidden="false">
+          <canvas id="gameCanvas" width="900" height="420" role="img" aria-label="Game canvas. Scream to make the hero jump."></canvas>
         </div>
 
-        <div class="center">
-          <label>Sensitivity
-            <input id="sensitivity" type="range" min="0.01" max="0.3" step="0.005" value="0.06"/>
-          </label>
-          <span id="sensVal">0.06</span>
+        <!-- Heads-up display (score, meters) -->
+        <div class="hud" role="status" aria-live="polite">
+          <div class="score-box">
+            <span class="score-label">Score</span>
+            <span id="score" class="score-value">0</span>
+          </div>
+
+          <div class="rms-meter" title="Live volume meter" aria-hidden="false">
+            <label for="sensitivity" class="small">Sensitivity</label>
+            <input id="sensitivity" data-hook="sensitivity" type="range" min="0.01" max="0.30" step="0.005" value="0.06" />
+            <span id="sensVal" class="sens-val">0.06</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right panel: recorder, stored scream list, upload progress -->
+      <aside class="controls-panel" role="complementary" aria-label="Recording and uploads">
+        <h2 class="panel-title">Record / Upload Scream</h2>
+
+        <div class="recorder" id="recorderArea">
+          <div class="recorder-buttons">
+            <button id="recStart" class="btn btn-record" type="button">Start Recording</button>
+            <button id="recStop" class="btn btn-record-stop" type="button" disabled>Stop & Upload</button>
+          </div>
+
+          <label for="labelInput" class="label">Clip label (optional)</label>
+          <input id="labelInput" class="text-input" type="text" placeholder="e.g. kk-explosion" maxlength="40" />
+
+          <div class="upload-state" aria-live="polite">
+            <progress id="uploadProgress" max="100" value="0" style="display:none"></progress>
+            <div id="uploadMsg" class="upload-msg"></div>
+          </div>
         </div>
 
-        <div class="right">
-          <div class="score">Score: <span id="score">0</span></div>
-        </div>
-      </div>
+        <hr class="sep" />
 
-      <div class="info">
-        <small>Tip: Start mic → press Start → make noise to jump. Click canvas to tap-jump.</small>
-      </div>
+        <div class="stored-clips" id="storedClipsArea" aria-label="Stored screams">
+          <h3 class="small">Stored Scream</h3>
+          <div id="storedInfo" class="stored-info">No stored scream yet.</div>
+          <div id="clipsList" class="clips-list" aria-live="polite"></div>
+        </div>
+      </aside>
+
+      <!-- Bottom: tutorial & tips -->
+      <section class="tutorial" id="tutorial" aria-label="How to play">
+        <h2>How to play</h2>
+        <ol>
+          <li>Grant mic access (Request Mic).</li>
+          <li>Press <strong>Start Game</strong>.</li>
+          <li>Make noise: soft voice moves, loud scream makes big jump.</li>
+          <li>Record your own scream and upload — it will play when you boost.</li>
+          <li>Tap the canvas to perform a tap-jump (fallback).</li>
+        </ol>
+
+        <div class="tips">
+          <strong>Pro tip:</strong> Increase sensitivity for quieter rooms. If the game ignores you, try lowering the threshold.
+        </div>
+      </section>
     </main>
 
-    <footer class="credits">
-      <small>Background from itch — embedded. Use your voice clips to customize later.</small>
+    <!-- Footer: credits, debug area -->
+    <footer class="site-footer" role="contentinfo">
+      <div class="left">
+        <small class="credit">Background provided (itch.io). Prototype by KK — built to be messy, fun, and fast.</small>
+      </div>
+
+      <div class="right debug" aria-hidden="true">
+        <small id="debugInfo">Ready.</small>
+      </div>
     </footer>
   </div>
 
-  <script src="game.js" type="module"></script>
+  <!-- Accessible modals and overlays (hidden by default, JS will toggle) -->
+  <div id="modalRoot" aria-hidden="true">
+    <!-- Modal template: JS will clone this for messages / leaderboard / rules -->
+    <template id="modalTemplate">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-inner">
+          <header class="modal-header">
+            <h3 id="modalTitle">Modal</h3>
+            <button class="modal-close" aria-label="Close">✕</button>
+          </header>
+          <div class="modal-body"></div>
+          <footer class="modal-footer">
+            <button class="modal-ok">OK</button>
+          </footer>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!--
+    GAME SCRIPTS:
+    - The actual game logic (mic handling, RMS detection, canvas drawing, firebase upload) will go in `game.js`.
+    - CSS will live in `styles.css`.
+    - When you say "drop JS", I'll provide a tidy, readable `game.js` that uses the DOM hooks above.
+  -->
+
+  <!-- Hook to load the game script. If you want the script inlined later, say so. -->
+  <script type="module" src="game.js"></script>
 </body>
 </html>
-
